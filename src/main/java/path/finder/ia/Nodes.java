@@ -1,9 +1,9 @@
-package path.finder.AStart;
+package path.finder.ia;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
-public final class Nodes{
+public final class Nodes {
 
 	private ArrayList<Node> list = new ArrayList<Node>();
 

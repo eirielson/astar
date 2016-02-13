@@ -1,8 +1,7 @@
-package path.finder.AStart;
+package path.finder.ia;
 
 import java.awt.Point;
 import java.util.ArrayList;
-
 import path.finder.heuristicas.Heuristica;
 
 /*
@@ -26,26 +25,26 @@ public class AStar implements PathFinder {
 
 	public ArrayList<Point> calcularCaminho(Point origem, Point destino) {
 
-		this.map.setPontoOrigem(origem);
-		this.map.setPontoDestino(destino);
+		this.map.marcarOrigemEm(origem);
+		this.map.marcarDestinoEm(destino);
 
 		if (EhObstaculo(destino))
 			return null;
 
 		resetParaNovaBusca(origem);
-
+		
 		while (openList.size() != 0) {
 
 			Node noCorrente = openList.getFirst();
 
-			if (map.nodeEhDestino(noCorrente)) {
+			if (map.checaSePontoEhDestino(noCorrente)) {
 				return constroiCaminhoEncontrato(noCorrente);
 			}
 
 			openList.remove(noCorrente);
 			closedList.add(noCorrente);
 
-			for (Node vizinho : noCorrente.getTrechosPossiveisCaminho()) {
+			for (Node vizinho : noCorrente.obterCaminhosProximos()) {
 
 				boolean caminhoVizinhoMelhor;
 
@@ -53,7 +52,7 @@ public class AStar implements PathFinder {
 					continue;
 
 				float distanciaDoInicio = (noCorrente.distanciaDoInicio()
-						+ map.getDistanceBetween(noCorrente, vizinho));
+						+ map.obterDistanciaEntre(noCorrente, vizinho));
 
 				if (!openList.contains(vizinho)) {
 					openList.add(vizinho);
@@ -64,10 +63,11 @@ public class AStar implements PathFinder {
 					caminhoVizinhoMelhor = true;
 				}
 
-				if(caminhoVizinhoMelhor){
-					vizinho.setPreviousNode(noCorrente);
+				if (caminhoVizinhoMelhor) {
+					vizinho.setarPontoReferencia(noCorrente);
 					vizinho.setDistanciaDoInicio(distanciaDoInicio);
-					vizinho.setHeuristica(calculadorDistancia.estimativaParaDestino(new Point(vizinho.getX(),vizinho.getY()), map.getNode(destino).getCoordenadas()));
+					vizinho.setCustoEstimadoParaDestino(calculadorDistancia.estimativaParaDestino(vizinho.getCoordenadas(),
+							map.getNode(destino).getCoordenadas()));
 				}
 			}
 		}
@@ -84,9 +84,9 @@ public class AStar implements PathFinder {
 
 	private ArrayList<Point> constroiCaminhoEncontrato(Node noCorrente) {
 		ArrayList<Point> path = new ArrayList<Point>();
-		while(!(noCorrente.getPreviousNode() == null)) {
-			path.add(0,noCorrente.getCoordenadas());
-			noCorrente = noCorrente.getPreviousNode();
+		while (!(noCorrente.obterPontoReferencia() == null)) {
+			path.add(0, noCorrente.getCoordenadas());
+			noCorrente = noCorrente.obterPontoReferencia();
 		}
 		return path;
 	}
